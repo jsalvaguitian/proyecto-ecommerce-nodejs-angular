@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RolUsuario {
+  CLIENTE
+  ADMIN
+}
+
+enum EstadoPedido {
+  PENDIENTE
+  PAGADO
+  CANCELADO
+  REEMBOLSADO
+}
+
+enum FormatoImagen {
+  JPG
+  PNG
+  WEBP
+}
+
+model Usuario {
+  id            Int      @id @default(autoincrement())
+  nombre        String
+  email         String   @unique
+  passwordHash  String
+  rol           RolUsuario @default(CLIENTE)
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  pedidos Pedido[]
+  tokensRecuperacion TokenRecuperacion[]
+
+  @@map("usuarios")
+}
+
+model TokenRecuperacion {
+  id          Int       @id @default(autoincrement())
+  tokenHash   String    @unique
+  usuarioId   Int
+  creadoEn    DateTime  @default(now())
+  expiraEn    DateTime
+  utilizadoEn DateTime?
+
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([expiraEn])
+  @@map("tokens_recuperacion")
+}
+
+model Categoria {
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique
+  creadaEn  DateTime   @default(now())
+
+  productos Producto[]
+
+  @@map("categorias")
+}
+
+model Producto {
+  id                Int           @id @default(autoincrement())
+  titulo            String
+  descripcion       String?
+  precio            Decimal       @db.Decimal(10, 2)
+  formato           FormatoImagen
+  ancho             Int
+  alto              Int
+  publicIdPreview   String
+  publicIdOriginal  String
+  activo            Boolean       @default(true)
+  creadoEn          DateTime      @default(now())
+  actualizadoEn     DateTime      @updatedAt
+
+  categorias        Categoria[]
+  detalles          DetallePedido[]
+
+  @@index([activo])
+  @@map("productos")
+}
+
+model Pedido {
+  id            Int          @id @default(autoincrement())
+  fecha         DateTime     @default(now())
+  total         Decimal      @db.Decimal(10, 2)
+  estado        EstadoPedido @default(PENDIENTE)
+  usuarioId     Int
+  usuario       Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  detalles      DetallePedido[]
+
+  @@index([usuarioId])
+  @@index([estado])
+  @@map("pedidos")
+}
+
+model DetallePedido {
+  id             Int      @id @default(autoincrement())
+  precioUnitario Decimal  @db.Decimal(10, 2)
+  pedidoId       Int
+  productoId     Int
+
+  pedido   Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  @@unique([pedidoId, productoId])
+  @@index([productoId])
+  @@map("detalles_pedido")
+}
