@@ -2,8 +2,8 @@
 import { Router } from "express";
 import { obtenerEstado } from "../controllers/health.controller.js";
 
-const router = Router();
+const healtRouter = Router();
 
-router.get("/", obtenerEstado);
+healtRouter.get("/", obtenerEstado);
 
-export default router;
+export default healtRouter;

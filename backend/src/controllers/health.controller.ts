@@ -2,10 +2,7 @@
 import type { Request, Response } from "express";
 import { comprobarEstado } from "../services/health.service.js";
 
-export const obtenerEstado = async (
-  _req: Request,
-  res: Response,
-): Promise<void> => {
+export const obtenerEstado = async (_req: Request,res: Response,): Promise<void> => {
   try {
     const estado = await comprobarEstado();
     res.status(200).json(estado);
