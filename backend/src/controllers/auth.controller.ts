@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import type { IAuthService } from "../interfaces/services/auth.service.interface.js"
 import { EmailYaRegistradoError } from "../errors/email-ya-registrado.error.js";
+import type { IAuthService } from "../services/auth.service.interface.js";
 
 export class AuthController {
 
